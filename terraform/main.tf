@@ -1,3 +1,4 @@
+# createa  VPC with DNS support
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -8,6 +9,7 @@ resource "aws_vpc" "main" {
   })
 }
 
+# Creates an internet gateway to enable internet access
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
@@ -16,6 +18,7 @@ resource "aws_internet_gateway" "igw" {
   })
 }
 
+# creates a public subnet
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidr
@@ -27,6 +30,7 @@ resource "aws_subnet" "public" {
   })
 }
 
+# this  creates a RT with internet access and associates it with the public subnet
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -45,6 +49,7 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
+# creates a security group allowing SSH and HTTP
 resource "aws_security_group" "web_sg" {
   name        = "web-sg"
   description = "Allow SSH and HTTP inbound traffic"

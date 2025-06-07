@@ -1,3 +1,4 @@
+# output.tf defines the outputs
 output "vpc_id" {
   description = "VPC ID"
   value       = aws_vpc.main.id
