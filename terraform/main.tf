@@ -1,3 +1,28 @@
+# main.tf
+
+# Pre-Check: Ensure the specified key pair exists in the region
+resource "null_resource" "check_keypair_exists" {
+  provisioner "local-exec" {
+    command = <<EOT
+      echo "Checking if key pair '${var.key_pair_name}' exists in region '${var.aws_region}'..."
+      aws ec2 describe-key-pairs --key-names "${var.key_pair_name}" --region ${var.aws_region} > /dev/null 2>&1
+      if [ $? -ne 0 ]; then
+        echo "ERROR: Key pair '${var.key_pair_name}' not found in region '${var.aws_region}'."
+        echo "FIX: Create it using: aws ec2 create-key-pair --key-name ${var.key_pair_name} --query \"KeyMaterial\" --output text > ~/.ssh/${var.key_pair_name}.pem"
+        echo "Then re-run terraform."
+        exit 1
+      fi
+      echo "Key pair '${var.key_pair_name}' verified."
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
+
+  # Run only during creation; no dependencies required
+  triggers = {
+    always_run = timestamp()
+  }
+}
+
 # createa  VPC with DNS support
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -84,8 +109,9 @@ resource "aws_security_group" "web_sg" {
   })
 }
 
+# creates a  EC2 instance
 resource "aws_instance" "web" {
-  ami                    = "ami-007d948a3621b6c3d"
+  ami                    = "ami-007d948a3621b6c3d" # replace this with a valid AMI ID
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]

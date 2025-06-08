@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# disable root SSH login, updates system packages, creates a limited user
+# set firewall, install fail2ban to block brute force attempts
+
 # Update package list and upgrade installed packages
 apt update -y && apt upgrade -y
 
